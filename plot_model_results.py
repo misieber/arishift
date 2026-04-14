@@ -179,8 +179,8 @@ class CurvedText(mtext.Text):
 
 
 
-ensemble_size = 1
-p_range = np.linspace(0.3, 1, ensemble_size)
+ensemble_size = 100
+p_range = np.linspace(0, 1, ensemble_size)
 pool = mp.Pool(mp.cpu_count())
 psols = pool.imap(sir_model.solver, p_range, mp.cpu_count())
 sols = [s for s in psols if s['success']]
@@ -228,14 +228,10 @@ ax.text(105, 0.9, r'$\mathbf{\beta}$', color=sb_grey, fontweight='bold')
 ax.set_ylabel('fraction of population')
 ax.set_ylim(0,1.05)
 
-# ax.set_xlabel('\nseason')
 ax.set_xticks(np.linspace(0, sol.t[-1], sir_model.n_seasons + 1), [])
 ax.set_xticks(np.linspace(26, sol.t[-1]-26, sir_model.n_seasons), minor=True)
 ax.set_xticklabels([str(i+1) for i in range(0,sir_model.n_seasons)], minor=True)
 ax.tick_params(axis='x', which='minor', color='white')
-
-# ax.text((npi_season + 0.24)*season_length, 0.9, 'NPI')
-# ax.fill_betweenx([-1, 2], npi_season*season_length, (npi_season+1)*season_length + 0.5, lw=0, color='crimson', alpha=0.2)
 
 ax.text(0.15, -0.22, 'season', transform = ax.transAxes)
 
@@ -261,10 +257,9 @@ ax.set_theta_zero_location('S')
 t_plot = np.linspace(0, sir_model.season_length, sir_model.steps_per_season)
 theta = np.linspace(0, 2*np.pi, len(t_plot))
 
-# colors = list([pp.cm.Reds(0.9)]) + [pp.cm.Reds(0.5) if i == npi_season else pp.cm.Blues(c) for i,c in enumerate(np.linspace(0.5, 1, n_seasons-1))]
-colors = [pp.cm.Reds(0.5) if i == sir_model.npi_season else pp.cm.Blues(c) for i,c in enumerate(np.linspace(0.5, 1, sir_model.n_seasons-1))]
+colors = list([pp.cm.Reds(0.9)]) + [pp.cm.Reds(0.5) if i == sir_model.npi_season else pp.cm.Blues(c) for i,c in enumerate(np.linspace(0.5, 1, sir_model.n_seasons-1))]
     
-season_start = int(np.argmax(sol.y[1] > 2*sir_model.I0) * sir_model.t_step / 52) + 1
+season_start = int(np.argmax(sol.y[1] > 2*sir_model.I0) * sir_model.t_step / 52) + 0
 
 b = np.array([sir_model.beta(t, p_range[i_example]) for t in sol.t])
 bmax = b[0:sir_model.steps_per_season]/sir_model.g
@@ -272,10 +267,9 @@ bmax = b[0:sir_model.steps_per_season]/sir_model.g
 for i in range(season_start, sir_model.n_seasons):
 
     lab = ''
-    if i == season_start+100:
+    if i == season_start:
         lab = 'infecteds in first season'
-        # ax.text(2, 0.27, 'first season', color=colors[i-season_start])
-        
+
         par = patches.FancyArrowPatch(posA=(4.205, 0.262), posB=(2.7, 0.262), connectionstyle="arc3, rad=0.385", lw=0, color=colors[i-season_start], alpha=0.6,
                                       arrowstyle=ArrowStyle('Simple', head_length=10, head_width=16, tail_width=10))
         ax.add_patch(par)
@@ -292,7 +286,6 @@ for i in range(season_start, sir_model.n_seasons):
         
     elif i == sir_model.npi_season+1:
         lab = 'infecteds after NPI season'
-        # ax.text(3.075, 0.21, 'after NPI season', color=colors[i-season_start])
         par = patches.FancyArrowPatch(posA=(4.205, 0.22), posB=(3.01, 0.22), connectionstyle="arc3, rad=0.31", lw=0, color=colors[i-season_start], alpha=0.6,
                                       arrowstyle=ArrowStyle('Simple', head_length=10, head_width=16, tail_width=10))
         ax.add_patch(par)
@@ -330,8 +323,6 @@ ax.vlines(theta[:-1], 0, 10000, linewidth=1, color='grey', alpha=0.4)
 
 ax.grid(zorder=0)
 ax.spines['polar'].set_visible(False)
-# ax.set_frame_on(False)
-# ax.grid(visible=False)
 
 
 # ######### reproduction number #########
@@ -365,10 +356,11 @@ for i in [sir_model.npi_season+1, sir_model.n_seasons-1]:
     
     ax32.plot(t_plot, reff, ls='-', lw=2, color=sb_red, alpha=1 if i==sir_model.npi_season+1 else 0.2)
     ax32.plot(t_plot, r0, lw=2, color=sb_grey, alpha=0.3, label=r'')
+            
+ax32.vlines([24], 0, 1, ls='--', color=sb_red)
+ax32.vlines([34.25], 0, 1, ls='--', color=sb_red, alpha=0.2)
 
-
-ax.annotate(r'$\mathbf{R_{e}}$', (20, 0.75), (12, 0.7), color=sb_red, fontweight='bold',
-            arrowprops=dict(arrowstyle='-', facecolor=sb_red, edgecolor=sb_red))
+ax.text(15, 0.48, r'$\mathbf{R_{e}}$', color=sb_red, fontweight='bold')
 ax.text(6, 0.775, r'$\mathbf{S}$', color=sb_green, fontweight='bold')
 ax.text(37, 0.7, r'$\mathbf{R_{0}}$', color=sb_grey, fontweight='bold')
 
@@ -379,98 +371,87 @@ ax.tick_params(axis='x', which='minor', color='white')
 
 ax.set_xlabel('time in season')
 ax.set_ylabel('fraction of population')
-# ax.set_ylim(0, 1.2*np.max(first_seasons + npi_seasons + other_seasons) )
 
 ax.set_ylim(0, 1)
 ax32.set_ylim(0, 1.1*bmax)
 
 ax32.set_ylabel(r'reproduction number')
 
-# pp.tight_layout()
-# pp.savefig('figures/figure_5c.pdf', bbox_inches='tight')
-
 ######### peakshift ########
-# ax = ax4
+ax = ax4
 
-# n_pre_npi = 1
-# n_post_npi = 4
+n_pre_npi = 1
+n_post_npi = 4
 
-# peakmap = None
+peakmap = None
 
-# start_season_at = 4*int(steps_per_season/12)   
+start_season_at = 4*int(sir_model.steps_per_season/12)   
 
-# for j, sol in enumerate(sols): 
+for j, sol in enumerate(sols): 
     
-#     I_plot = sol.y[1][start_season_at + (npi_season-n_pre_npi)*steps_per_season:((npi_season-n_pre_npi)+n_post_npi)*steps_per_season]
+    I_plot = sol.y[1][start_season_at + (sir_model.npi_season-n_pre_npi)*sir_model.steps_per_season:((sir_model.npi_season-n_pre_npi)+n_post_npi)*sir_model.steps_per_season]
     
-#     if peakmap is None:
-#         peakmap = I_plot
-#     else:
-#         peakmap = np.vstack((peakmap, I_plot))
+    if peakmap is None:
+        peakmap = I_plot
+    else:
+        peakmap = np.vstack((peakmap, I_plot))
 
 
-# y = range(peakmap.shape[0]+1)
-# x = range(peakmap[0].shape[0]+1)
+y = range(peakmap.shape[0]+1)
+x = range(peakmap[0].shape[0]+1)
 
-# cvals  = [0, 1]
-# colors = ["snow", sb_red]
+cvals  = [0, 1]
+colors = ["snow", sb_red]
 
-# norm=pp.Normalize(min(cvals),max(cvals))
-# tuples = list(zip(map(norm,cvals), colors))
-# cmap = mcol.LinearSegmentedColormap.from_list("", tuples)
+norm=pp.Normalize(min(cvals),max(cvals))
+tuples = list(zip(map(norm,cvals), colors))
+cmap = mcol.LinearSegmentedColormap.from_list("", tuples)
 
-# pmesh = ax.pcolormesh(x, y, peakmap, cmap=cmap)
+pmesh = ax.pcolormesh(x, y, peakmap, cmap=cmap)
 
-# from scipy.signal import argrelextrema
-# peaks = argrelextrema(peakmap[0,:], np.greater)[0]
+from scipy.signal import argrelextrema
+peaks = argrelextrema(peakmap[0,:], np.greater)[0]
 
-# for i in range(0, len(peaks)):
-#     ax.axvline(int(peaks[i]), 0, 1, ls='--', lw=2, color=sb_grey, alpha=0.75)
+for i in range(0, len(peaks)):
+    ax.axvline(int(peaks[i]), 0, 1, ls='--', lw=2, color=sb_grey, alpha=0.75)
 
 
-# ax.set_ylabel('NPI efficacy during NPI season ($p$)')
-# ax.set_yticks([i/4*peakmap.shape[0] for i in range(5)])
-# ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=peakmap.shape[0]))
+ax.set_ylabel('NPI efficacy during NPI season ($p$)')
+ax.set_yticks([i/4*peakmap.shape[0] for i in range(5)])
+ax.yaxis.set_major_formatter(mtick.PercentFormatter(xmax=peakmap.shape[0]))
 
-# start_month = 11
-# n_months = int(t_step*len(x)/4)-2
-# xtl = [calendar.month_abbr[1:][(i-1)%12][0] for i in range (start_month, start_month + n_months-1)]
+start_month = 11
+n_months = int(sir_model.t_step*len(x)/4)-2
+xtl = [calendar.month_abbr[1:][(i-1)%12][0] for i in range (start_month, start_month + n_months-1)]
 
-# # ax.set_xlabel('\nmonth')
-# # ax.text(0.48, -0.2, 'time', transform = ax.transAxes)
-# ax.set_xticks(np.linspace(0, len(x), n_months), [])
-# ax.set_xticks(np.linspace(0.5*len(x)/n_months, len(x)-0.5*len(x)/n_months, n_months-1), xtl, minor=True)
-# ax.tick_params(axis='x', which='minor', color='white')
+ax.set_xticks(np.linspace(0, len(x), n_months), [])
+ax.set_xticks(np.linspace(0.5*len(x)/n_months, len(x)-0.5*len(x)/n_months, n_months-1), xtl, minor=True)
+ax.tick_params(axis='x', which='minor', color='white')
 
-# ax.text(0.11, 0.8, r'normal timing ($p=0$)', color=sb_grey, transform = ax.transAxes)
+ax.text(0.11, 0.8, r'normal timing ($p=0$)', color=sb_grey, transform = ax.transAxes)
 
-# ax.annotate('', (0.59, 0.225), (0.632, 0.225), color=sb_grey, arrowprops=dict(facecolor=sb_grey, alpha=0.5, lw=0, width=10, headwidth=15), xycoords = ax.transAxes)
-# # ax.text(0.41, 0.2125, 'earlier', color='white', transform = ax.transAxes, fontsize='small')
+ax.annotate('', (0.59, 0.225), (0.632, 0.225), color=sb_grey, arrowprops=dict(facecolor=sb_red, alpha=0.5, lw=0, width=10, headwidth=15), xycoords = ax.transAxes)
+ax.text(0.03, -0.13, 'normal season', transform = ax.transAxes)
+rect = patches.Rectangle((0, -0.005), 0.183, -0.15, linewidth=0, edgecolor='crimson', facecolor='lightgrey', alpha=0.2, transform = ax.transAxes, clip_on=False)
+ax.add_patch(rect)
 
-# ax.annotate('', (0.85, 0.95), (0.905, 0.95), color=sb_grey, arrowprops=dict(facecolor=sb_grey, alpha=0.5, lw=0, width=10, headwidth=15), xycoords = ax.transAxes)
-# # ax.text(0.805, 0.93725, 'earlier', color='white', transform = ax.transAxes, fontsize='small')
+ax.text(0.28, -0.13, 'NPI season', transform = ax.transAxes)
+rect = patches.Rectangle((0.182, -0.005), 0.274, -0.15, linewidth=0, edgecolor='crimson', facecolor='crimson', alpha=0.2, transform = ax.transAxes, clip_on=False)
+ax.add_patch(rect)
 
-# ax.text(0.03, -0.13, 'normal season', transform = ax.transAxes)
-# rect = patches.Rectangle((0, -0.005), 0.183, -0.15, linewidth=0, edgecolor='crimson', facecolor='lightgrey', alpha=0.2, transform = ax.transAxes, clip_on=False)
-# ax.add_patch(rect)
+ax.text(0.53, -0.13, 'NPI season + 1', transform = ax.transAxes)
+rect = patches.Rectangle((0.456, -0.005), 0.273, -0.15, linewidth=0, edgecolor='crimson', facecolor='lightgrey', alpha=0.2, transform = ax.transAxes, clip_on=False)
+ax.add_patch(rect)
 
-# ax.text(0.28, -0.13, 'NPI season', transform = ax.transAxes)
-# rect = patches.Rectangle((0.182, -0.005), 0.274, -0.15, linewidth=0, edgecolor='crimson', facecolor='crimson', alpha=0.2, transform = ax.transAxes, clip_on=False)
-# ax.add_patch(rect)
+ax.text(0.8, -0.13, 'NPI season + 2', transform = ax.transAxes)
+rect = patches.Rectangle((0.729, -0.005), 0.273, -0.15, linewidth=0, edgecolor='crimson', facecolor='grey', alpha=0.2, transform = ax.transAxes, clip_on=False)
+ax.add_patch(rect)
 
-# ax.text(0.53, -0.13, 'NPI season + 1', transform = ax.transAxes)
-# rect = patches.Rectangle((0.456, -0.005), 0.273, -0.15, linewidth=0, edgecolor='crimson', facecolor='lightgrey', alpha=0.2, transform = ax.transAxes, clip_on=False)
-# ax.add_patch(rect)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
 
-# ax.text(0.8, -0.13, 'NPI season + 2', transform = ax.transAxes)
-# rect = patches.Rectangle((0.729, -0.005), 0.273, -0.15, linewidth=0, edgecolor='crimson', facecolor='grey', alpha=0.2, transform = ax.transAxes, clip_on=False)
-# ax.add_patch(rect)
-
-# ax.spines['top'].set_visible(False)
-# ax.spines['right'].set_visible(False)
-
-# fig.colorbar(pmesh, ax=ax, shrink=0.5, fraction=0.05, pad=0.02, label='prevalence, $I$')
+fig.colorbar(pmesh, ax=ax, shrink=0.5, fraction=0.05, pad=0.02, label='prevalence, $I$')
 
 pp.tight_layout()
-# pp.subplots_adjust(wspace=0.25, hspace=0.45)
+pp.subplots_adjust(wspace=0.25, hspace=0.45)
 pp.savefig('figures/figure_5.pdf', bbox_inches='tight')
