@@ -84,4 +84,8 @@ for i, cause in enumerate(['flu', 'rsv', 'covid']):
     axs[i].set_title(titles[i], pad=10, fontsize=12)
     
 pp.tight_layout()
-pp.savefig('figures/figure_3.pdf', bbox_inches='tight')
+pp.savefig('figures/figure_3.tiff', bbox_inches='tight', dpi=600)
+
+from PIL import Image
+im = Image.open('figures/figure_3.tiff')
+im.save('figures/figure_3.tiff', compression='tiff_lzw')

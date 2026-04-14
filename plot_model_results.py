@@ -454,4 +454,8 @@ fig.colorbar(pmesh, ax=ax, shrink=0.5, fraction=0.05, pad=0.02, label='prevalenc
 
 pp.tight_layout()
 pp.subplots_adjust(wspace=0.25, hspace=0.45)
-pp.savefig('figures/figure_5.pdf', bbox_inches='tight')
+pp.savefig('figures/figure_5.tiff', bbox_inches='tight', dpi=600)
+
+from PIL import Image
+im = Image.open('figures/figure_5.tiff')
+im.save('figures/figure_5.tiff', compression='tiff_lzw')

@@ -152,7 +152,11 @@ for axi, data_src in enumerate(plt_data_sources):
 
 pp.tight_layout()
 pp.subplots_adjust(wspace=0.2, hspace=0.5)
-pp.savefig(output_dir + 'figure_1.pdf')
+pp.savefig(output_dir + 'figure_1.tiff', dpi=600)
+
+from PIL import Image
+im = Image.open(output_dir + 'figure_1.tiff')
+im.save(output_dir + 'figure_1.tiff', compression='tiff_lzw')
 
 
 ###### polar plot ######
@@ -227,4 +231,8 @@ fig.legend(handles=h, labels=l, loc='center left', bbox_to_anchor=(0.95, 0.5), f
 
 pp.tight_layout()
 pp.subplots_adjust(wspace=0, hspace=0.5)
-pp.savefig(output_dir + 'figure_2.pdf', bbox_inches='tight')
+pp.savefig(output_dir + 'figure_2.tiff', bbox_inches='tight', dpi=600)
+
+from PIL import Image
+im = Image.open(output_dir + 'figure_2.tiff')
+im.save(output_dir + 'figure_2.tiff', compression='tiff_lzw')

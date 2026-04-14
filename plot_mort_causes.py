@@ -100,4 +100,8 @@ for cause in causes:
         j+=1
   
 pp.tight_layout()
-pp.savefig('figures/figure_4.pdf', bbox_inches='tight')
+pp.savefig('figures/figure_4.tiff', bbox_inches='tight', dpi=600)
+
+from PIL import Image
+im = Image.open('figures/figure_4.tiff')
+im.save('figures/figure_4.tiff', compression='tiff_lzw')
